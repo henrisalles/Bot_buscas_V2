@@ -13,13 +13,13 @@ class Busca():
         self.total_paginas = total_paginas
         # Cria uma lista de url para cada pagina_lista de produtos
         self.lista_urls_pagina_lista_produto = self.cria_lista_urls(frase_pesquisa)
-        # Realiza as requests assincronas
+        # Realiza as requests assincronas das paginas lista
         asyncio.run(self.resquest_async(self.lista_urls_pagina_lista_produto, self.lista_pagina_lista_produto))
         # Realiza a procura do url do produto no html da request
         self.lista_urls_pagina_produto = self.procura_url_produto_em_pagina_lista()
-        # Realiza as requests assincronas
+        # Realiza as requests assincronas das paginas produto
         asyncio.run(self.resquest_async(self.lista_urls_pagina_produto, self.lista_pagina_produto))
-        
+        # Realiza a classificação dos produtos
         self.procura_atributos_na_url_produto()
 
 
@@ -42,31 +42,32 @@ class Busca():
             ret = await asyncio.gather(*(self.lista_produtos(url, session, lista_p_append) for url in lista_urls))
         print("Finalized all. Return is a list of len {} outputs.".format(len(ret)))
 
-    async def lista_produtos(self, url:str, session, lista):
+    async def lista_produtos(self, url:str, session, lista:list):
         try:
             async with session.get(url=url) as response:
                 resp = await response.text()
-                lista.append(resp)
-                print(f"Url {url} pega com sucesso !")
-                return response
+                lista.append([resp, url])
+                #print(f"Url {url} pega com sucesso !")
+            return response
         except Exception as e:
-            print(f"Não foi possivel pegar a url {url} por uma Exception de {e.__class__}")
+            #print(f"Não foi possivel pegar a url {url} por uma Exception de {e.__class__}")
+            pass
 
     def procura_url_produto_em_pagina_lista(self):
+        urls_produtos = []
         for pagina in self.lista_pagina_lista_produto:
-            soup = BeautifulSoup(pagina, "html.parser")
-            url_produtos = []
+            soup = BeautifulSoup(pagina[0], "html.parser")
             search_frames = soup.find_all('li', class_="ui-search-layout__item")
             # Limitando o search_frame para o padrao de busca por pagina
             search_frames = search_frames[:40]
             for prod in search_frames:
-                url_produtos.append(prod.find('a', class_='ui-search-link')['href'])
-        return url_produtos
+                urls_produtos.append(prod.find('a', class_='ui-search-link')['href'])
+        return urls_produtos
 
     def procura_atributos_na_url_produto(self):
-        for pagina_produto in self.lista_pagina_produto:
-            soup = BeautifulSoup(pagina_produto, "html.parser")
-            produto = Produto()
+        for pagina_produto in self.lista_pagina_produto[:1]:
+            soup = BeautifulSoup(pagina_produto[0], "html.parser")
+            produto = Produto(soup)
             
 
 
