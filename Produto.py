@@ -52,24 +52,18 @@ class ProdutoML:
 
         try:
             cor = self.soup.find('span', class_='ui-pdp-variations__selected-label ui-pdp-color--BLACK').text.lower()
-        except:
-            cor = None
-
-        try:
             cor = cor.split('/')[0]
             cor = cor.split('-')[0]
             cor = cor.split(' ')[0]
             cor = cor.split('+')[0]
             cor = cor.split(',')[0]
+            if cor == 'pto' or cor == 'pta' or cor == 'preta':
+                cor = 'preto'
+            elif cor == 'bco' or cor == 'bca' or cor == 'branca':
+                cor = 'branco'
+            elif cor == 'vde' or cor == 'lim' or cor == 'lima' or cor == 'limão':
+                cor = 'verde'
         except:
-            pass
-
-        if cor == 'pto' or cor == 'pta' or cor == 'preta':
-            cor = 'preto'
-        elif cor == 'bco' or cor == 'bca' or cor == 'branca':
-            cor = 'branco'
-        elif cor == 'vde' or cor == 'lim' or cor == 'lima' or cor == 'limão':
-            cor = 'verde'
-
+            cor = None
 
         return nome, float(preco), vendedor, tipo_anuncio, url_imagem, cor, quantidade
